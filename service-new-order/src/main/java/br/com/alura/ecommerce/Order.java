@@ -13,4 +13,8 @@ public class Order {
         this.amount = amount;
     }
 
+    // parei
+    // https://cursos.alura.com.br/course/kafka-cluster-de-microservicos/task/65894
+    // 4:26
+
 }
