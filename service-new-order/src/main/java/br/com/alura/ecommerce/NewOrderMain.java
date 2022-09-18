@@ -23,7 +23,4 @@ public class NewOrderMain {
         }
     }
 
-//parei no 4 3, adicione 10 min
-
-
 }
