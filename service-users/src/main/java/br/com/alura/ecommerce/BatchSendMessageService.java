@@ -29,15 +29,16 @@ public class BatchSendMessageService {
 
     public static void main(String[] args) throws Exception {
         var batchService = new BatchSendMessageService();
-        try (var service = new KafkaService<>(BatchSendMessageService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
+        try (var service = new KafkaService<>(BatchSendMessageService.class.getSimpleName(), "SEND_MESSAGE_TO_ALL_USERS",
                 batchService::parse, String.class, new HashMap<>())) {
             service.run();
         }
     }
 
-    private void parse(ConsumerRecord<String, String> record) throws SQLException, ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<String>> message) throws SQLException, ExecutionException, InterruptedException {
         System.out.println("-----");
         System.out.println("Processing new batch");
+        var record = message.getPayload();
         System.out.println(record.value());
         var order = record.value();
 
@@ -47,7 +48,7 @@ public class BatchSendMessageService {
     }
 
     private List<User> getAllUsers() throws SQLException {
-        var results = connection.prepareStatement("select uuid from User").executeQuery();
+        var results = connection.prepareStatement("select uuid from Users").executeQuery();
         List<User> users = new ArrayList<>();
         while (results.next()) {
             users.add(new User(results.getString(1)));
