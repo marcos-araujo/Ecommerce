@@ -15,8 +15,7 @@ public class EmailService {
     public static void main(String[] args) throws Exception {
         var emailService = new EmailService();
         try (var service = new KafkaService(EmailService.class.getSimpleName(),
-                "ECOMMERCE_SEND_EMAIL", emailService::parse, String.class,
-                new HashMap<>())) {
+                "ECOMMERCE_SEND_EMAIL", emailService::parse, new HashMap<>())) {
             service.run();
         }
     }
