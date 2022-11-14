@@ -29,21 +29,21 @@ public class BatchSendMessageService {
 
     public static void main(String[] args) throws Exception {
         var batchService = new BatchSendMessageService();
-        try (var service = new KafkaService<>(BatchSendMessageService.class.getSimpleName(), "SEND_MESSAGE_TO_ALL_USERS",
+        try (var service = new KafkaService<>(BatchSendMessageService.class.getSimpleName(), "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
                 batchService::parse, String.class, new HashMap<>())) {
             service.run();
         }
     }
 
-    private void parse(ConsumerRecord<String, Message<String>> message) throws SQLException, ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException, ExecutionException, InterruptedException {
         System.out.println("-----");
         System.out.println("Processing new batch");
-        var record = message.getPayload();
-        System.out.println(record.value());
+        var message = record.value();
+        System.out.println("Topic: " + message.getPayload());
         var order = record.value();
 
         for (User user: getAllUsers()) {
-            userDispatcher.send(record.value(), user.getUuid(), user);
+            userDispatcher.send(message.getPayload(), user.getUuid(), message.getId().continueWith(BatchSendMessageService.class.getSimpleName()), user);
         }
     }
 
