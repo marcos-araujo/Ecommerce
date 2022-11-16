@@ -43,7 +43,7 @@ public class BatchSendMessageService {
         var order = record.value();
 
         for (User user: getAllUsers()) {
-            userDispatcher.send(message.getPayload(), user.getUuid(), message.getId().continueWith(BatchSendMessageService.class.getSimpleName()), user);
+            userDispatcher.sendAsync(message.getPayload(), user.getUuid(), message.getId().continueWith(BatchSendMessageService.class.getSimpleName()), user);
         }
     }
 
