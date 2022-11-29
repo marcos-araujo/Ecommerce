@@ -1,6 +1,8 @@
 package br.com.alura.ecommerce;
 
+import br.com.alura.ecommerce.consumer.ConsumerService;
 import br.com.alura.ecommerce.consumer.KafkaService;
+import br.com.alura.ecommerce.consumer.ServicerRunner;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.sql.Connection;
@@ -9,7 +11,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class CreateUserService {
+public class CreateUserService implements ConsumerService<Order> {
 
     private final Connection connection;
 
@@ -26,14 +28,10 @@ public class CreateUserService {
     }
 
     public static void main(String[] args) throws Exception {
-        var createUserService = new CreateUserService();
-        try (var service = new KafkaService<>(CreateUserService.class.getSimpleName(), "ECOMMERCE_NEW_ORDER",
-                createUserService::parse, new HashMap<>())) {
-            service.run();
-        }
+        new ServicerRunner(CreateUserService::new).start(1);
     }
 
-    private void parse(ConsumerRecord<String, Message<Order>> record) throws SQLException {
+    public void parse(ConsumerRecord<String, Message<Order>> record) throws Exception {
         System.out.println("-----");
         System.out.println("Processing new order, checking for new user");
         System.out.println(record.value());
@@ -41,6 +39,16 @@ public class CreateUserService {
         if (isNewUser(order.getEmail())) {
             insertNewUser(order.getEmail());
         }
+    }
+
+    @Override
+    public String getTopic() {
+        return "ECOMMERCE_NEW_ORDER";
+    }
+
+    @Override
+    public String getConsumerGroup() {
+        return CreateUserService.class.getSimpleName();
     }
 
     private void insertNewUser(String email) throws SQLException {
@@ -58,5 +66,4 @@ public class CreateUserService {
         return !results.next();
     }
 
-    //
 }
