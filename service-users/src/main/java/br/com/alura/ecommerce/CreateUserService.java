@@ -1,30 +1,22 @@
 package br.com.alura.ecommerce;
 
 import br.com.alura.ecommerce.consumer.ConsumerService;
-import br.com.alura.ecommerce.consumer.KafkaService;
 import br.com.alura.ecommerce.consumer.ServicerRunner;
+import br.com.alura.ecommerce.database.LocalDatabase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class CreateUserService implements ConsumerService<Order> {
 
-    private final Connection connection;
+    private final LocalDatabase database;
 
-    public CreateUserService() throws SQLException {
-        String url = "jdbc:sqlite:users_database.db";
-        connection = DriverManager.getConnection(url);
-        try {
-            connection.createStatement().execute("create table Users (" +
-                    "uuid varchar(200) primary key ," +
-                    "email varchar(200))");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    CreateUserService() throws SQLException {
+        this.database = new LocalDatabase("users_database");
+        this.database.createIfNotExists("create table Users (uuid varchar(200) primary key, email varchar(200))");
     }
 
     public static void main(String[] args) throws Exception {
@@ -52,11 +44,13 @@ public class CreateUserService implements ConsumerService<Order> {
     }
 
     private void insertNewUser(String email) throws SQLException {
-        var insert = connection.prepareStatement("insert into Users (uuid, email) values (?,?)");
-        insert.setString(1, UUID.randomUUID().toString());
+        database.update("insert into Users (uuid, email) values (?,?)", uuid, email);
+        var insert = connection.prepareStatement(statement);
+        var uuid = UUID.randomUUID().toString();
+        insert.setString(1, uuid);
         insert.setString(2, email);
         insert.execute();
-        System.out.println("Users uuid and " + email + " added");
+        System.out.println("User " + uuid + "and " + email + " added");
     }
 
     private boolean isNewUser(String email) throws SQLException {
