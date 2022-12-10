@@ -14,8 +14,8 @@ public class Order {
         this.email = email;
     }
 
-    // parei
-    // https://cursos.alura.com.br/course/kafka-cluster-de-microservicos/task/65894
-    // 4:26
+    public String getOrderId() {
+        return orderId;
+    }
 
 }

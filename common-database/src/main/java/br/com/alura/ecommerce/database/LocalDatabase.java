@@ -1,8 +1,7 @@
 package br.com.alura.ecommerce.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.sql.*;
 
 public class LocalDatabase {
 
@@ -18,6 +17,30 @@ public class LocalDatabase {
             connection.createStatement().execute(sql);
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public boolean update(String statement, String ...params) throws SQLException {
+        return prepare(statement, params).execute();
+    }
+
+    public ResultSet query(String query, String... params) throws SQLException {
+        return prepare(query, params).executeQuery();
+    }
+
+    private PreparedStatement prepare(String statement, String[] params) throws SQLException {
+        var preparedStatement = connection.prepareStatement(statement);
+        for (int i = 0; i< params.length; i++) {
+            preparedStatement.setString(i+1, params[i]);
+        }
+        return preparedStatement;
+    }
+
+    public void close() throws IOException {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new IOException(e);
         }
     }
 

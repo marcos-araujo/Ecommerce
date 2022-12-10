@@ -5,8 +5,6 @@ import br.com.alura.ecommerce.consumer.ServicerRunner;
 import br.com.alura.ecommerce.database.LocalDatabase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -44,19 +42,13 @@ public class CreateUserService implements ConsumerService<Order> {
     }
 
     private void insertNewUser(String email) throws SQLException {
-        database.update("insert into Users (uuid, email) values (?,?)", uuid, email);
-        var insert = connection.prepareStatement(statement);
         var uuid = UUID.randomUUID().toString();
-        insert.setString(1, uuid);
-        insert.setString(2, email);
-        insert.execute();
+        database.update("insert into Users (uuid, email) values (?,?)", uuid, email);
         System.out.println("User " + uuid + "and " + email + " added");
     }
 
     private boolean isNewUser(String email) throws SQLException {
-        var exists = connection.prepareStatement("select uuid from Users where email = ? limit 1");
-        exists.setString(1, email);
-        var results = exists.executeQuery();
+        var results = database.query("select uuid from Users where email = ? limit 1", email);
         return !results.next();
     }
 
